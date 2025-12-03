@@ -1,20 +1,22 @@
 #!/usr/bin/make -f
 
+build_dir = build
+
 .PHONY: default
 default: build
 
 .PHONY: run
-run: build/src/bonicpp
-	./build/src/bonicpp
+run: "$(build_dir)/src/bonicpp"
+	"./$(build_dir)/src/bonicpp"
 
-build/src/bonicpp: build
+"$(build_dir)/src/bonicpp": build
 
 .PHONY: build
 build: configure
-	cmake --build build
+	cmake --build "$(build_dir)"
 
 .PHONY: configure
-configure: build/Makefile
+configure: "$(build_dir)/Makefile"
 
-build/Makefile: CMakeLists.txt
-	cmake -B build
+"$(build_dir)/Makefile": CMakeLists.txt
+	cmake -B "$(build_dir)" --preset all
