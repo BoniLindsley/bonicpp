@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "dev",
+      "binaryDir": "build",
+      "installDir": "install",
+      "cacheVariables": {
+        "BONICPP_BUILD_TESTING": "ON",
+        "VCPKG_MANIFEST_FEATURES": "dev"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "dependencies": [
+    "argparse",
+    "spdlog"
+  ],
+  "features": {
+    "dev": {
+      "description": "For testing.",
+      "dependencies": [
+        "catch2"
+      ]
+    }
+  }
+}
