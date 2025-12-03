@@ -9,6 +9,13 @@
       "dependencies": [
         "catch2"
       ]
+    },
+    "raytracing": {
+      "description": "For testing.",
+      "dependencies": [
+        "boost-safe-numerics",
+        "sdl3"
+      ]
     }
   }
 }

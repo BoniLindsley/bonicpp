@@ -9,3 +9,7 @@ set_target_properties(
 
 target_link_libraries("${TARGET_NAME}" PRIVATE argparse::argparse)
 target_link_libraries("${TARGET_NAME}" PRIVATE spdlog::spdlog)
+
+if(BONICPP_BUILD_RAYTRACING)
+  add_subdirectory("raytracing")
+endif()
