@@ -15,6 +15,10 @@ run: "$(build_dir)/src/bonicpp"
 build: configure
 	cmake --build "$(build_dir)"
 
+.PHONY: clean
+clean:
+	rm -dfr "$(build_dir)"
+
 .PHONY: configure
 configure: "$(build_dir)/Makefile"
 
