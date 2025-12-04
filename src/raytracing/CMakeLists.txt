@@ -9,6 +9,7 @@ set_target_properties(
   "${TARGET_NAME}" PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF
 )
 
+target_link_libraries("${TARGET_NAME}" PRIVATE "${PROJECT_NAME}-common")
 target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE $<TARGET_NAME_IF_EXISTS:SDL3::SDL3main>
