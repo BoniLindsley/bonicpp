@@ -23,7 +23,7 @@
 
 namespace bonicpp::watchdog {
 
-FileMonitor::FileMonitor(const std::string& path, Callback cb)
+Observer::Observer(const std::string& path, Callback cb)
     : path_(path), callback_(std::move(cb)) {
 #ifdef __linux__
   fd_ = inotify_init1(IN_NONBLOCK);
@@ -51,7 +51,7 @@ FileMonitor::FileMonitor(const std::string& path, Callback cb)
   overlapped_.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 #endif
 }
-FileMonitor::~FileMonitor() {
+Observer::~Observer() {
   stop();
 #ifdef __linux__
   if (wd_ != -1)
@@ -66,16 +66,16 @@ FileMonitor::~FileMonitor() {
 #endif
 }
 
-auto FileMonitor::start() -> void {
+auto Observer::start() -> void {
   running_ = true;
   spdlog::info("Monitoring: {}", path_);
   monitor();
 }
 
-auto FileMonitor::stop() -> void { running_ = false; }
+auto Observer::stop() -> void { running_ = false; }
 
 #ifdef __linux__
-auto FileMonitor::monitor() -> void {
+auto Observer::monitor() -> void {
   std::array<char, 4096> buf;
   struct pollfd pfd = {.fd = fd_, .events = POLLIN, .revents = 0};
 
@@ -123,7 +123,7 @@ auto FileMonitor::monitor() -> void {
   }
 }
 #elif _WIN32
-auto FileMonitor::monitor() -> void {
+auto Observer::monitor() -> void {
   char buffer[4096];
   DWORD bytesReturned;
 

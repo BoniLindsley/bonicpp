@@ -9,12 +9,12 @@
 
 namespace bonicpp::watchdog {
 
-class FileMonitor {
+class Observer {
 public:
   using Callback = std::function<void(const std::string&, EventType)>;
 
-  FileMonitor(const std::string& path, Callback cb);
-  ~FileMonitor();
+  Observer(const std::string& path, Callback cb);
+  ~Observer();
 
   auto start() -> void;
   void stop();
