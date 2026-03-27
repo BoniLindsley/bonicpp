@@ -24,3 +24,7 @@ configure: "$(build_dir)/Makefile"
 
 "$(build_dir)/Makefile": CMakeLists.txt
 	cmake -B "$(build_dir)" --preset all
+
+.PHONY: test
+test: build
+	ctest --output-on-failure --test-dir "$(build_dir)"

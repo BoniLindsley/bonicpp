@@ -10,16 +10,18 @@ vcpkg install
 cmake -B build
 ```
 
-To build tests, use the `dev` preset when configuring.
-
-```sh
-cmake -B build --preset dev
-```
-
 After that, compile with
 
 ```sh
 cmake --build build
+```
+
+To build tests, use the `dev` preset when configuring.
+
+```sh
+cmake -B build --preset dev
+cmake --build build
+ctest --test-dir build
 ```
 
 ### Setting up vcpkg
