@@ -23,59 +23,25 @@
 
 namespace bonicpp::watchdog {
 
-Observer::Observer(const std::string& path, Callback cb)
-    : path_(path), callback_(std::move(cb)) {
-#ifdef __linux__
-  fd_ = inotify_init1(IN_NONBLOCK);
-  if (fd_ == -1) {
-    throw std::runtime_error("Failed to initialize inotify");
-  }
+BaseObserver::~BaseObserver() { stop(); }
 
-  wd_ = inotify_add_watch(
-      fd_, path.c_str(),
-      IN_CREATE | IN_MODIFY | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO);
-  if (wd_ == -1) {
-    close(fd_);
-    throw std::runtime_error("Failed to add watch: " + path);
-  }
-#elif _WIN32
-  handle_ = CreateFileA(
-      path.c_str(), FILE_LIST_DIRECTORY,
-      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
-      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-      NULL);
-  if (handle_ == INVALID_HANDLE_VALUE) {
-    throw std::runtime_error("Failed to open directory: " + path);
-  }
-  memset(&overlapped_, 0, sizeof(overlapped_));
-  overlapped_.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-#endif
+auto BaseObserver::start() -> void {
+  running_ = true;
+  spdlog::info("Starting observer.");
+  run();
 }
-Observer::~Observer() {
-  stop();
+
+auto BaseObserver::stop() -> void { running_ = false; }
+
 #ifdef __linux__
+InotifyObserver::~InotifyObserver() {
   if (wd_ != -1)
     inotify_rm_watch(fd_, wd_);
   if (fd_ != -1)
     close(fd_);
-#elif _WIN32
-  if (overlapped_.hEvent)
-    CloseHandle(overlapped_.hEvent);
-  if (handle_ != INVALID_HANDLE_VALUE)
-    CloseHandle(handle_);
-#endif
 }
 
-auto Observer::start() -> void {
-  running_ = true;
-  spdlog::info("Monitoring: {}", path_);
-  monitor();
-}
-
-auto Observer::stop() -> void { running_ = false; }
-
-#ifdef __linux__
-auto Observer::monitor() -> void {
+auto InotifyObserver::run() -> void {
   std::array<char, 4096> buf;
   struct pollfd pfd = {.fd = fd_, .events = POLLIN, .revents = 0};
 
@@ -122,8 +88,34 @@ auto Observer::monitor() -> void {
     }
   }
 }
-#elif _WIN32
-auto Observer::monitor() -> void {
+auto InotifyObserver::schedule(const std::string& path, Callback cb)
+    -> void {
+  fd_ = inotify_init1(IN_NONBLOCK);
+  if (fd_ == -1) {
+    throw std::runtime_error("Failed to initialize inotify");
+  }
+
+  wd_ = inotify_add_watch(
+      fd_, path.c_str(),
+      IN_CREATE | IN_MODIFY | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO);
+  if (wd_ == -1) {
+    close(fd_);
+    throw std::runtime_error("Failed to add watch: " + path);
+  }
+}
+
+#endif
+
+#ifdef _WIN32
+WindowsApiObserver::~WindowsApiObserver() {
+  stop();
+  if (overlapped_.hEvent)
+    CloseHandle(overlapped_.hEvent);
+  if (handle_ != INVALID_HANDLE_VALUE)
+    CloseHandle(handle_);
+}
+
+auto WindowsApiObserver::run() -> void {
   char buffer[4096];
   DWORD bytesReturned;
 
@@ -182,6 +174,20 @@ auto Observer::monitor() -> void {
                                         info->NextEntryOffset);
     }
   }
+}
+
+auto WindowsApiObserver::schedule(const std::string& path, Callback cb)
+    -> void {
+  handle_ = CreateFileA(
+      path.c_str(), FILE_LIST_DIRECTORY,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+      NULL);
+  if (handle_ == INVALID_HANDLE_VALUE) {
+    throw std::runtime_error("Failed to open directory: " + path);
+  }
+  memset(&overlapped_, 0, sizeof(overlapped_));
+  overlapped_.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 }
 #endif
 } // namespace bonicpp::watchdog
