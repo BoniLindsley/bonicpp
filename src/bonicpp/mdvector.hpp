@@ -147,6 +147,7 @@ template <typename T, std::size_t Rank> class MDVector {
 
 public:
   using self_type = MDVector;
+  using extents_type = std::array<std::size_t, Rank>;
   using value_type = T;
   using iterator = SliceIterator<value_type, Rank>;
   using reference = typename iterator::reference;
@@ -155,7 +156,7 @@ public:
 
 public:
   MDVector() = default;
-  explicit MDVector(std::array<std::size_t, Rank> extents)
+  explicit MDVector(extents_type extents)
       : extents_{extents},
         data_(
             std::accumulate(
@@ -189,9 +190,7 @@ public:
     return *this;
   }
   static constexpr auto rank() -> std::size_t { return Rank; }
-  auto extents() const -> const std::array<std::size_t, Rank>& {
-    return extents_;
-  }
+  auto extents() const -> const extents_type& { return extents_; }
   [[nodiscard]] auto size() const -> std::size_t { return data_.size(); }
   auto to_slice() -> Slice<value_type, Rank> {
     return {data_.data(), extents_.data()};
@@ -209,7 +208,7 @@ public:
   }
 
 private:
-  std::array<std::size_t, Rank> extents_{};
+  extents_type extents_{0};
   std::vector<value_type> data_{};
 };
 
