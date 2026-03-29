@@ -16,6 +16,7 @@ template <typename T, std::size_t Rank> class Slice;
 
 template <typename T, std::size_t Rank> class SliceIterator {
 public:
+  using self_type = SliceIterator;
   using pointer = T*;
   using reference =
       std::conditional_t<Rank == 1, T&, Slice<T, Rank - 1>>;
@@ -24,6 +25,7 @@ public:
 
 public:
   SliceIterator() = default;
+  SliceIterator(const self_type&) = default;
   SliceIterator(
       pointer ptr, const std::size_t* shape, std::size_t stride)
       : ptr_(ptr), shape_(shape), stride_(stride) {}
@@ -36,11 +38,17 @@ public:
     ptr_ += stride_;
     return *this;
   }
+  auto operator+(std::size_t n) const -> SliceIterator {
+    return {ptr_ + n * stride_, shape_, stride_};
+  }
   auto operator[](std::size_t n) const -> reference {
     return *(*this + n);
   }
+  auto operator==(const SliceIterator& other) const -> bool {
+    return ptr_ == other.ptr_;
+  }
   auto operator!=(const SliceIterator& other) const -> bool {
-    return ptr_ != other.ptr_;
+    return not(*this == other);
   }
 
 private:

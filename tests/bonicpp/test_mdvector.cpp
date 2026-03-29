@@ -6,7 +6,63 @@
 
 // Standard libraries.
 #include <array>
+#include <numeric>
 #include <vector>
+
+TEST_CASE("SliceIterator") {
+  SECTION("constructor rank 1") {
+    auto shape = std::array<std::size_t, 1>{3};
+    auto buffer = std::vector(3, 0);
+    buffer = {1, 5, 9};
+    // Constructor.
+    auto slice =
+        bonicpp::SliceIterator<int, 1>(buffer.data(), shape.data(), 1ul);
+    // Copy constructor.
+    auto other = slice;
+    // Equality.
+    CHECK(slice == other);
+    CHECK(not(slice != other));
+    // Dereference.
+    CHECK(*slice == 1ul);
+    // Index.
+    CHECK(slice[0] == 1ul);
+    CHECK(slice[1] == 5ul);
+    CHECK(slice[2] == 9ul);
+    // Increment.
+    ++slice;
+    CHECK(*slice == 5ul);
+    CHECK(slice[0] == 5ul);
+    CHECK(slice[1] == 9ul);
+    // Inequality.
+    CHECK(slice != other);
+    CHECK(not(slice == other));
+  }
+  SECTION("constructor rank 3") {
+    auto shape = std::array<std::size_t, 3>{3, 2, 3};
+    auto buffer = std::vector(18, 0);
+    std::iota(buffer.begin(), buffer.end(), 1);
+    // Constructor.
+    auto slice =
+        bonicpp::SliceIterator<int, 3>(buffer.data(), shape.data(), 6ul);
+    // Copy constructor.
+    auto other = slice;
+    // Equality.
+    CHECK(slice == other);
+    CHECK(not(slice != other));
+    // Dereference.
+    CHECK((*slice)[0][0] == 1ul);
+    // Index.
+    CHECK(slice[0][0][1] == 2ul);
+    CHECK(slice[0][1][0] == 4ul);
+    // Increment.
+    ++slice;
+    CHECK(slice[0][0][1] == 8ul);
+    CHECK(slice[0][1][0] == 10ul);
+    // Inequality.
+    CHECK(slice != other);
+    CHECK(not(slice == other));
+  }
+}
 
 TEST_CASE("Slice") {
   SECTION("constructor") {
