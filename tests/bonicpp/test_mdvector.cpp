@@ -201,6 +201,17 @@ TEST_CASE("Slice") {
   }
 }
 
+TEST_CASE("MDSpan") {
+  SECTION("constructor from vector") {
+    auto source = std::vector(15, 0);
+    std::iota(source.begin(), source.end(), 1);
+    auto md_span = bonicpp::MDSpan<int, 1>{source};
+    auto slice = md_span.to_slice();
+    CHECK(slice[0] == 1);
+    CHECK(slice[14] == 15);
+  }
+}
+
 TEST_CASE("MDVector") {
   SECTION("constructor") {
     SECTION("default") {

@@ -150,6 +150,39 @@ private:
   std::size_t stride_;
 };
 
+template <typename T, std::size_t Rank> class MDSpan {
+  static_assert(Rank >= 1, "Rank must be >= 1");
+
+public:
+  using self_type = MDSpan;
+  using extents_type = std::array<std::size_t, Rank>;
+  using value_type = T;
+
+public:
+  explicit MDSpan(T* ptr, extents_type extents)
+      : ptr_{ptr}, extents_{extents} {};
+  explicit MDSpan(std::vector<T>& source, extents_type extents)
+      : MDSpan(source.data(), extents) {}
+  explicit MDSpan(std::vector<T>& source)
+      : MDSpan(source.data(), {source.size()}) {}
+
+public:
+  operator Slice<value_type, Rank>() { return to_slice(); }
+  operator Slice<const value_type, Rank>() const { return to_slice(); }
+
+public:
+  auto to_slice() -> Slice<value_type, Rank> {
+    return {ptr_, extents_.data()};
+  }
+  auto to_slice() const -> Slice<const value_type, Rank> {
+    return {ptr_, extents_.data()};
+  }
+
+private:
+  T* ptr_;
+  extents_type extents_{0};
+};
+
 template <typename T, std::size_t Rank> class MDVector {
   static_assert(Rank >= 1, "Rank must be >= 1");
 
